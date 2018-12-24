@@ -1,44 +1,242 @@
 <?php
 
-namespace tests\models;
+namespace tests\unit\models;
 
 use app\models\User;
 
-class UserTest extends \Codeception\Test\Unit
+class UserTest extends \tests\unit\AbstractUnit
 {
-    public function testFindUserById()
+    /**
+     * @test
+     */
+    public function shouldFindUserById()
     {
-        expect_that($user = User::findIdentity(100));
-        expect($user->username)->equals('admin');
+        // given
+        $userAttrs = $this->generateUserAttrs();
+        $this->tester->haveRecord(User::class, $userAttrs);
 
-        expect_not(User::findIdentity(999));
-    }
+        // when
+        $user = User::findIdentity($userAttrs['id']);
 
-    public function testFindUserByAccessToken()
-    {
-        expect_that($user = User::findIdentityByAccessToken('100-token'));
-        expect($user->username)->equals('admin');
-
-        expect_not(User::findIdentityByAccessToken('non-existing'));        
-    }
-
-    public function testFindUserByUsername()
-    {
-        expect_that($user = User::findByUsername('admin'));
-        expect_not(User::findByUsername('not-admin'));
+        // then
+        $this->assertNotNull($user, 'User identity should be found.');
+        $this->assertInstanceOf(
+            User::class,
+            $user,
+            'User identity should be correct class instance.',
+        );
+        $this->assertEquals(
+            $userAttrs['id'],
+            $user->getId(),
+            'User identity "id" attr should be correct one.',
+        );
+        $this->assertEquals(
+            $userAttrs,
+            $user->attributes,
+            'User identity attributes should be correct one.',
+        );
     }
 
     /**
-     * @depends testFindUserByUsername
+     * @test
      */
-    public function testValidateUser($user)
+    public function shouldReturnNullForNonExistingUser()
     {
-        $user = User::findByUsername('admin');
-        expect_that($user->validateAuthKey('test100key'));
-        expect_not($user->validateAuthKey('test102key'));
+        // given
+        $userId = static::$faker->randomDigitNotNull;
 
-        expect_that($user->validatePassword('admin'));
-        expect_not($user->validatePassword('123456'));        
+        // when
+        $user = User::findIdentity($userId);
+
+        // then
+        $this->assertNull($user, 'Should return NULL if User does not exits.');
     }
 
+    /**
+     * @test
+     */
+    public function shouldFindUserByUsername()
+    {
+        // given
+        $userAttrs = $this->generateUserAttrs();
+        $this->tester->haveRecord(User::class, $userAttrs);
+
+        // when
+        $user = User::findByUsername($userAttrs['username']);
+
+        // then
+        $this->assertNotNull($user, 'User identity should be found.');
+        $this->assertInstanceOf(
+            User::class,
+            $user,
+            'User should be correct class instance.',
+        );
+        $this->assertEquals(
+            $userAttrs,
+            $user->attributes,
+            'User attributes should be correct one.',
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function shouldReturnNullOfFindNonExistingUserByUsername()
+    {
+        // given
+        $userAttrs = $this->generateUserAttrs();
+
+        // when
+        $user = User::findByUsername($userAttrs['username']);
+
+        // then
+        $this->assertNull(
+            $user,
+            'User identity for non existing user should be NULL.',
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function shouldFindUserByAccessToken()
+    {
+        // given
+        $userAttrs = $this->generateUserAttrs();
+        $this->tester->haveRecord(User::class, $userAttrs);
+
+        // when
+        $user = User::findIdentityByAccessToken($userAttrs['username']);
+
+        // then
+        $this->assertNotNull($user, 'User identity should be found.');
+        $this->assertInstanceOf(
+            User::class,
+            $user,
+            'User identity should be correct class instance.',
+        );
+        $this->assertEquals(
+            $userAttrs,
+            $user->attributes,
+            'User identity attributes should be correct one.',
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function shouldReturnNullOfFindNonExistingUserByAccessToken()
+    {
+        // given
+        $userAttrs = $this->generateUserAttrs();
+
+        // when
+        $user = User::findIdentityByAccessToken($userAttrs['username']);
+
+        // then
+        $this->assertNull(
+            $user,
+            'User identity for non existing user should be NULL.',
+        );
+    }
+
+    /**
+     * @test
+     * @depends shouldFindUserByUsername
+     */
+    public function shouldValidateAccessToken()
+    {
+        // given
+        $userAttrs = $this->generateUserAttrs();
+        $this->tester->haveRecord(User::class, $userAttrs);
+        $user = User::findByUsername($userAttrs['username']);
+
+        // when
+        $result = $user->validateAuthKey($userAttrs['username']);
+
+        // then
+        $this->assertTrue(
+            $result,
+            'User identity should be validated successfully by "username".',
+        );
+    }
+
+    /**
+     * @test
+     * @depends shouldFindUserByUsername
+     */
+    public function shouldNotValidateWrongAccessToken()
+    {
+        // given
+        $userAttrs = $this->generateUserAttrs();
+        $this->tester->haveRecord(User::class, $userAttrs);
+        $user = User::findByUsername($userAttrs['username']);
+
+        do {
+            $wrongToken = static::$faker->userName;
+        } while ($wrongToken === $userAttrs['username']);
+
+        // when
+        $result = $user->validateAuthKey($wrongToken);
+
+        // then
+        $this->assertFalse(
+            $result,
+            'User identity should not be validated successfully by wrong "username".',
+        );
+    }
+
+    /**
+     * @test
+     * @depends shouldFindUserByUsername
+     */
+    public function shouldCreateUser()
+    {
+        // given
+        do {
+            $userAttrs = $this->generateUserAttrs();
+            $user = User::findByUsername($userAttrs['username']);
+        } while ($user);
+
+        // when
+        $result = User::createByUsername($userAttrs['username']);
+
+        // then
+        $this->assertNotEmpty(
+            $result,
+            'User should be created successfully.',
+        );
+        $this->assertInstanceOf(
+            User::class,
+            $result,
+            'Correct class instance should be created.',
+        );
+        $this->assertEquals(
+            ['username' => $userAttrs['username'], 'balance' => 0],
+            ['username' => $result->username, 'balance' => $result->balance],
+            'User with correct attributes should be created.'
+        );
+        $this->tester->seeRecord(
+            User::class,
+            ['username' => $result->username, 'balance' => $result->balance],
+        );
+    }
+
+    /**
+     * @test
+     * @depends shouldFindUserByUsername
+     * @expectedException \yii\base\InvalidArgumentException
+     */
+    public function shouldNotCreateDuplicateUser()
+    {
+        // given
+        $userAttrs = $this->generateUserAttrs();
+        $this->tester->haveRecord(User::class, $userAttrs);
+
+        // when
+        User::createByUsername($userAttrs['username']);
+
+        // then
+        // throw an exception
+    }
 }

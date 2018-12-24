@@ -8,4 +8,6 @@ modules:
     enabled:
       - Asserts
       - Yii2:
-            part: [orm, email]
+          part: [orm]
+          transaction: true
+          cleanup: true

@@ -4,6 +4,7 @@ namespace app\models;
 
 use Yii;
 use yii\base\Model;
+use yii\base\InvalidArgumentException;
 
 /**
  * LoginForm is the model behind the login form.
@@ -13,12 +14,20 @@ use yii\base\Model;
  */
 class LoginForm extends Model
 {
+    /**
+     * @var string Unique name of user
+     */
     public $username;
-    public $password;
+
+    /**
+     * @var bool
+     */
     public $rememberMe = true;
 
-    private $_user = false;
-
+    /**
+     * @var null|User
+     */
+    private $user = null;
 
     /**
      * @return array the validation rules.
@@ -26,31 +35,12 @@ class LoginForm extends Model
     public function rules()
     {
         return [
-            // username and password are both required
-            [['username', 'password'], 'required'],
+            ['username', 'required'],
+            ['username', 'trim'],
+            ['username', 'match', 'pattern' => '/^[\w\-\.]+$/'],
             // rememberMe must be a boolean value
             ['rememberMe', 'boolean'],
-            // password is validated by validatePassword()
-            ['password', 'validatePassword'],
         ];
-    }
-
-    /**
-     * Validates the password.
-     * This method serves as the inline validation for password.
-     *
-     * @param string $attribute the attribute currently being validated
-     * @param array $params the additional name-value pairs given in the rule
-     */
-    public function validatePassword($attribute, $params)
-    {
-        if (!$this->hasErrors()) {
-            $user = $this->getUser();
-
-            if (!$user || !$user->validatePassword($this->password)) {
-                $this->addError($attribute, 'Incorrect username or password.');
-            }
-        }
     }
 
     /**
@@ -59,23 +49,38 @@ class LoginForm extends Model
      */
     public function login()
     {
-        if ($this->validate()) {
-            return Yii::$app->user->login($this->getUser(), $this->rememberMe ? 3600*24*30 : 0);
+        if (false === $this->validate()) {
+            return false;
+        }
+        try {
+            return Yii::$app->user->login(
+                $this->getOrCreateUser(),
+                $this->rememberMe ? 3600*24*30 : 0,
+            );
+        } catch (InvalidArgumentException $e) {
+            $this->addError('username', $e->getMessage());
         }
         return false;
     }
 
     /**
-     * Finds user by [[username]]
+     * Finds or creates user by [[username]]
      *
-     * @return User|null
+     * @return User
+     *
+     * @throws InvalidArgumentException
      */
-    public function getUser()
+    public function getOrCreateUser()
     {
-        if ($this->_user === false) {
-            $this->_user = User::findByUsername($this->username);
+        if ($this->user) {
+            return $this->user;
         }
+        $this->user = User::findByUsername($this->username);
+        if ($this->user) {
+            return $this->user;
+        }
+        $this->user = User::createByUsername($this->username);
 
-        return $this->_user;
+        return $this->user;
     }
 }
