@@ -27,7 +27,7 @@ $authUserId = \Yii::$app->user->isGuest ? null : \Yii::$app->user->getId()
                 'buttons' => [
                     'transfer' => function ($url, $model, $key) use ($authUserId) {
                         /** @var \app\models\User $model */
-                        if ($authUserId === $model->getId()) {
+                        if (null === $authUserId || $authUserId === $model->getId()) {
                             return '';
                         }
                         $usernameUrl = $url . '&username=' . urlencode($model->username);

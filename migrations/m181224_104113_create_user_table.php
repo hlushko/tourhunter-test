@@ -10,7 +10,7 @@ class m181224_104113_create_user_table extends Migration
     /**
      * {@inheritdoc}
      */
-    public function safeUp()
+    public function up()
     {
         $this->createTable('user', [
             'id' => $this->primaryKey()->unsigned(),
@@ -22,7 +22,7 @@ class m181224_104113_create_user_table extends Migration
     /**
      * {@inheritdoc}
      */
-    public function safeDown()
+    public function down()
     {
         $this->dropTable('user');
     }

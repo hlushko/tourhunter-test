@@ -84,10 +84,7 @@ class SiteController extends Controller
             return $this->goBack();
         }
 
-        return $this->render(
-            'login',
-            ['model' => $model],
-        );
+        return $this->render('login', ['model' => $model]);
     }
 
     /**
@@ -116,8 +113,6 @@ class SiteController extends Controller
             return $this->goHome();
         }
 
-        return $this->render('transfer', [
-            'model' => $model,
-        ]);
+        return $this->render('transfer', ['model' => $model]);
     }
 }
