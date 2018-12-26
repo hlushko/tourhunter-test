@@ -41,7 +41,8 @@
         ],
         "post-create-project-cmd": [
             "yii\\composer\\Installer::postCreateProject",
-            "yii\\composer\\Installer::postInstall"
+            "yii\\composer\\Installer::postInstall",
+            "php yii migrate/up --interactive=0"
         ]
     },
     "extra": {
