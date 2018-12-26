@@ -17,11 +17,15 @@ abstract class AbstractUnit extends \Codeception\Test\Unit
     protected static $faker;
 
     /**
-     * Creates tools common for all cases
+     * @return Generator
      */
-    public static function setUpBeforeClass()
+    public static function getFaker()
     {
-        self::$faker = FakerFactory::create();
+        if (empty(static::$faker)) {
+            static::$faker = FakerFactory::create();
+        }
+
+        return static::$faker;
     }
 
     /**
@@ -29,10 +33,25 @@ abstract class AbstractUnit extends \Codeception\Test\Unit
      */
     protected function generateUserAttrs()
     {
+        $faker = static::getFaker();
+
         return [
-            'id' => self::$faker->randomDigitNotNull,
-            'username' => self::$faker->userName,
-            'balance' => self::$faker->randomFloat(2, -1000, 99999),
+            'id' => $faker->randomNumber(null, true),
+            'username' => $faker->userName,
+            'balance' => $faker->randomFloat(2, -1000, 99999),
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    protected function generateTransferAttrs()
+    {
+        $faker = static::getFaker();
+
+        return [
+            'username' => $faker->userName,
+            'amount' => $faker->randomFloat(2, 0.01, 99999),
         ];
     }
 }

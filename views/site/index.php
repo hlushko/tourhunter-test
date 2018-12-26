@@ -1,22 +1,44 @@
 <?php
 
+use yii\helpers\Html;
+use yii\grid\GridView;
+
 /* @var $this yii\web\View */
+/* @var $dataProvider yii\data\ActiveDataProvider */
 
 $this->title = 'TourHunter Test App';
+
+$authUserId = \Yii::$app->user->isGuest ? null : \Yii::$app->user->getId()
 ?>
 <div class="site-index">
 
-    <div class="jumbotron">
-        <h1>Congratulations!</h1>
+    <?= GridView::widget([
+        'dataProvider' => $dataProvider,
+        'columns' => [
+            ['class' => 'yii\grid\SerialColumn'],
 
-        <p class="lead">You have successfully created your Yii-powered application.</p>
+            'username',
+            'balance',
 
-        <p><a class="btn btn-lg btn-success" href="http://www.yiiframework.com">Get started with Yii</a></p>
-    </div>
-
-    <div class="body-content">
-
-
-
-    </div>
+            [
+                'class' => 'yii\grid\ActionColumn',
+                'headerOptions' => ['width' => '80'],
+                'template' => '{transfer}',
+                'buttons' => [
+                    'transfer' => function ($url, $model, $key) use ($authUserId) {
+                        /** @var \app\models\User $model */
+                        if ($authUserId === $model->getId()) {
+                            return '';
+                        }
+                        $usernameUrl = $url . '&username=' . urlencode($model->username);
+                        return Html::a(
+                            '<span class="glyphicon glyphicon-transfer"></span>',
+                            $usernameUrl,
+                            ['title' => 'Transfer to'],
+                        );
+                    },
+                ],
+            ],
+        ],
+    ]); ?>
 </div>

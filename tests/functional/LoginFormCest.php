@@ -73,11 +73,11 @@ class LoginFormCest extends AbstractCest
         $I->expectTo('Login successfully');
 
         $I->seeResponseCodeIsSuccessful();
-        $I->seeCurrentUrlEquals($this->getHomeUrl());
+        $I->seeCurrentUrlEquals($this->getHomeRoute());
         $I->see(sprintf(
             'Logout (%s: %s)',
             $userAttrs['username'],
-            $userAttrs['balance'],
+            number_format($userAttrs['balance'], 2, '.', ''),
         ));
         $I->dontSeeElement('#login-form');
     }
@@ -97,7 +97,7 @@ class LoginFormCest extends AbstractCest
         $I->expectTo('Login successfully');
 
         $I->seeResponseCodeIsSuccessful();
-        $I->seeCurrentUrlEquals($this->getHomeUrl());
+        $I->seeCurrentUrlEquals($this->getHomeRoute());
         $I->see(sprintf(
             'Logout (%s: %s)',
             $userAttrs['username'],

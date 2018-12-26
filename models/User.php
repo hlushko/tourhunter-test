@@ -11,6 +11,10 @@ use yii\base\InvalidArgumentException;
  */
 class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
 {
+    const USERNAME_VALIDATION_PATTERN = '/^[a-z0-9\_\-\.]+$/';
+    const USERNAME_MAX_LENGTH = 255;
+    const MINIMUM_BALANCE = -1000;
+
     /**
      * {@inheritdoc}
      */

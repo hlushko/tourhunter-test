@@ -52,6 +52,12 @@ $config = [
         ],
     ],
     'params' => $params,
+    'as hostControl' => [
+        'class' => 'yii\filters\HostControl',
+        'allowedHosts' => [
+            getenv('APP_HOST'),
+        ],
+    ],
 ];
 
 if (YII_ENV_DEV) {

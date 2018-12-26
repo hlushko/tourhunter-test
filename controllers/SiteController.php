@@ -2,12 +2,15 @@
 
 namespace app\controllers;
 
+use app\models\LoginForm;
+use app\models\TransferForm;
+use app\models\User;
 use Yii;
+use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\Response;
 use yii\filters\VerbFilter;
-use app\models\LoginForm;
 
 class SiteController extends Controller
 {
@@ -19,10 +22,10 @@ class SiteController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::class,
-                'only' => ['logout'],
+                'only' => ['logout', 'transfer'],
                 'rules' => [
                     [
-                        'actions' => ['logout'],
+                        'actions' => ['logout', 'transfer'],
                         'allow' => true,
                         'roles' => ['@'],
                     ],
@@ -56,7 +59,13 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $dataProvider = new ActiveDataProvider([
+            'query' => User::find(),
+        ]);
+
+        return $this->render('index', [
+            'dataProvider' => $dataProvider,
+        ]);
     }
 
     /**
@@ -91,5 +100,24 @@ class SiteController extends Controller
         Yii::$app->user->logout();
 
         return $this->goHome();
+    }
+
+    /**
+     * Transfers costs to another User.
+     * If transfer is successful, the browser will be redirected to the Home page.
+     * @return mixed
+     */
+    public function actionTransfer()
+    {
+        $model = new TransferForm([
+            'username' => Yii::$app->request->get('username', ''),
+        ]);
+        if ($model->load(Yii::$app->request->post()) && $model->transfer()) {
+            return $this->goHome();
+        }
+
+        return $this->render('transfer', [
+            'model' => $model,
+        ]);
     }
 }

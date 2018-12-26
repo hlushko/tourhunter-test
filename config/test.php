@@ -23,6 +23,7 @@ return [
         ],
         'urlManager' => [
             'showScriptName' => true,
+            'enablePrettyUrl' => true,
         ],
         'user' => [
             'identityClass' => 'app\models\User',

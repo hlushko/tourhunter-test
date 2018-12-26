@@ -31,7 +31,7 @@ abstract class AbstractCest
         $faker = $this->getFaker();
 
         return [
-            'id' => $faker->randomDigitNotNull,
+            'id' => $faker->randomNumber(null, true),
             'username' => $faker->userName,
             'balance' => $faker->randomFloat(2, -1000, 99999),
         ];
@@ -40,7 +40,7 @@ abstract class AbstractCest
     /**
      * @return string
      */
-    protected function getHomeUrl()
+    protected function getHomeRoute()
     {
         return '/index-test.php';
     }

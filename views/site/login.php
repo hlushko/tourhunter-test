@@ -13,7 +13,10 @@ $this->params['breadcrumbs'][] = $this->title;
 <div class="site-login">
     <h1><?= Html::encode($this->title) ?></h1>
 
-    <p>Please fill your username to login or use new one to register:</p>
+    <p>
+        Please fill your username to login or use new one to register.<br />
+        You can use lower english letters, numbers and symbols "_", "-" and ".".
+    </p>
 
     <?php $form = ActiveForm::begin([
         'id' => 'login-form',

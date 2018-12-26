@@ -1,5 +1,3 @@
 .idea/
-config/db.php
-config/test_db.php
 tests/_support/_generated
 vendor/

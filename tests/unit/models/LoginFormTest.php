@@ -32,6 +32,13 @@ class LoginFormTest extends \tests\unit\AbstractUnit
      */
     public function usernameValidationProvider()
     {
+        $faker = static::getFaker();
+
+        $tooLongUsername = $faker->userName;
+        while (strlen($tooLongUsername) <= User::USERNAME_MAX_LENGTH) {
+            $tooLongUsername .= $faker->userName;
+        }
+
         return [
             'should fail on empty value' => [
                 ['username' => ''],
@@ -50,7 +57,7 @@ class LoginFormTest extends \tests\unit\AbstractUnit
             ],
             'should not contain upper letters' => [
                 ['username' => 'hEllO'],
-                true,
+                false,
                 'User "username" should not contains upper letters',
             ],
             'should allow numbers' => [
@@ -72,6 +79,11 @@ class LoginFormTest extends \tests\unit\AbstractUnit
                 ['username' => 'hello.you2'],
                 true,
                 'User "username" can contain dots',
+            ],
+            'should fail on too long "username"' => [
+                ['username' => $tooLongUsername],
+                false,
+                'User "username" should not be longer then expected one.',
             ],
         ];
     }

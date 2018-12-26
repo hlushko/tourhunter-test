@@ -8,9 +8,6 @@ use yii\base\InvalidArgumentException;
 
 /**
  * LoginForm is the model behind the login form.
- *
- * @property User|null $user This property is read-only.
- *
  */
 class LoginForm extends Model
 {
@@ -25,11 +22,6 @@ class LoginForm extends Model
     public $rememberMe = true;
 
     /**
-     * @var null|User
-     */
-    private $user = null;
-
-    /**
      * @return array the validation rules.
      */
     public function rules()
@@ -37,8 +29,8 @@ class LoginForm extends Model
         return [
             ['username', 'required'],
             ['username', 'trim'],
-            ['username', 'match', 'pattern' => '/^[\w\-\.]+$/'],
-            // rememberMe must be a boolean value
+            ['username', 'string', 'max' => User::USERNAME_MAX_LENGTH],
+            ['username', 'match', 'pattern' => User::USERNAME_VALIDATION_PATTERN],
             ['rememberMe', 'boolean'],
         ];
     }
@@ -72,15 +64,12 @@ class LoginForm extends Model
      */
     public function getOrCreateUser()
     {
-        if ($this->user) {
-            return $this->user;
+        $user = User::findByUsername($this->username);
+        if ($user) {
+            return $user;
         }
-        $this->user = User::findByUsername($this->username);
-        if ($this->user) {
-            return $this->user;
-        }
-        $this->user = User::createByUsername($this->username);
+        $user = User::createByUsername($this->username);
 
-        return $this->user;
+        return $user;
     }
 }
