@@ -1,6 +1,10 @@
 Test project for TourHunter company
 -------------------
 
+You can access project by link: http://tourhunter-test.herokuapp.com/
+
+---
+
 To run locally you can use Docker config: https://github.com/hlushko/tourhunter-test-docker
 
 For local version (not Docker) should be defined such ENV variables:
